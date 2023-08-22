@@ -102,7 +102,7 @@ def main():
     db = Database()
     db.add_dict_data(iol.portafolio())
     
-    # db.upload()
+    db.upload()
 
 
 if __name__ == '__main__':

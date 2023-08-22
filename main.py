@@ -1,28 +1,41 @@
 import schedule
 import time
-import broker
+from broker import InvertirOnline
+from database import Database
 
-def welcome_message(cr=False):
-    if cr:
-        print('')
-    print('[+] Ejecutando InvertirOnline database backup & restore...')
 
-def task():
-    broker.main()
-    return welcome_message(cr=True)
+class Plan:
+
+    def welcome_message(self, cr=False):
+        if cr:
+            print('')
+        print('[+] Ejecutando InvertirOnline database backup & restore...')
+        
+    def task(self):
+        iol = InvertirOnline()
+        data = iol.portafolio()
+
+        
+        db = Database()
+        db.add_dict_data(data)
+
+        db.upload()
+
+    def setup(self):
+        schedule.every().monday.at('18:20').do(self.task)
+        schedule.every().tuesday.at('18:20').do(self.task)
+        schedule.every().wednesday.at('18:20').do(self.task)
+        schedule.every().thursday.at('18:20').do(self.task)
+        schedule.every().friday.at('18:20').do(self.task)
+
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+
 
 def main():
-    schedule.every().monday.at('18:20').do(task)
-    schedule.every().tuesday.at('18:20').do(task)
-    schedule.every().wednesday.at('18:20').do(task)
-    schedule.every().thursday.at('18:20').do(task)
-    schedule.every().friday.at('18:20').do(task)
-
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
-
+    plan = Plan()
+    plan.setup()
 
 if __name__ == '__main__':
-    welcome_message()
     main()
