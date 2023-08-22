@@ -1,0 +1,11 @@
+[Unit]
+After=network.target
+Description=InvertirOnline database backup and restore
+
+[Service]
+Type=simple
+ExecStart=python main.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
