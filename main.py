@@ -4,14 +4,14 @@ from broker import InvertirOnline
 from database import Database
 
 
-class Plan:
+class Task:
 
     def welcome_message(self, cr=False):
         if cr:
             print('')
         print('[+] Ejecutando InvertirOnline database backup & restore...')
         
-    def task(self):
+    def execute(self):
         iol = InvertirOnline()
         data = iol.portafolio()
 
@@ -21,12 +21,12 @@ class Plan:
 
         db.upload()
 
-    def setup(self):
-        schedule.every().monday.at('18:20').do(self.task)
-        schedule.every().tuesday.at('18:20').do(self.task)
-        schedule.every().wednesday.at('18:20').do(self.task)
-        schedule.every().thursday.at('18:20').do(self.task)
-        schedule.every().friday.at('18:20').do(self.task)
+    def plan(self):
+        schedule.every().monday.at('18:20').do(self.execute)
+        schedule.every().tuesday.at('18:20').do(self.execute)
+        schedule.every().wednesday.at('18:20').do(self.execute)
+        schedule.every().thursday.at('18:20').do(self.execute)
+        schedule.every().friday.at('18:20').do(self.execute)
         
         self.welcome_message()
 
@@ -36,8 +36,8 @@ class Plan:
 
 
 def main():
-    plan = Plan()
-    plan.setup()
+    task = Task()
+    task.plan()
 
 if __name__ == '__main__':
     main()
