@@ -27,6 +27,8 @@ class Plan:
         schedule.every().wednesday.at('18:20').do(self.task)
         schedule.every().thursday.at('18:20').do(self.task)
         schedule.every().friday.at('18:20').do(self.task)
+        
+        self.welcome_message()
 
         while True:
             schedule.run_pending()
