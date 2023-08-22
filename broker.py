@@ -12,7 +12,14 @@ load_dotenv()
 
 database = os.environ.get('DATABASE')
 
+
 class InvertirOnline:
+    
+    token = None
+    
+    def __init__(self):
+        self.login()
+    
     def login(self):
         if len(sys.argv) == 3:
             _user = sys.argv[1]
@@ -22,9 +29,11 @@ class InvertirOnline:
                 'password':_pass,
                 'grant_type':'password'
                 }
+
+            self.borrarPant()
+
             r = requests.post('https://api.invertironline.com/token', data=_data)
-            c = 'Bearer ' + str(json.loads(r.text)['access_token'])
-            borrarPant()
+            self.token = 'Bearer ' + str(json.loads(r.text)['access_token'])
 
         else:
             _user = os.environ.get('IOL_USER')
@@ -34,9 +43,11 @@ class InvertirOnline:
                 'password':_pass,
                 'grant_type':'password'
                 }
-            r = requests.post('https://api.invertironline.com/token', data=_data)
+
             self.borrarPant()
-            return 'Bearer ' + str(json.loads(r.text)['access_token'])
+
+            r = requests.post('https://api.invertironline.com/token', data=_data)
+            self.token = 'Bearer ' + str(json.loads(r.text)['access_token'])
 
     def borrarPant(self):
         if os.name == 'posix':
@@ -44,8 +55,8 @@ class InvertirOnline:
         elif os.name == 'ce' or os.name == 'nt' or os.name == 'dos':
             os.system('cls')
 
-    def variacion(self, token, show=False):
-        data = {'Authorization': token}
+    def portafolio(self, show=False):
+        data = {'Authorization': self.token}
         r = requests.get('https://api.invertironline.com/api/portafolio', headers=data)
         port = json.loads(r.text)
         lista = []
@@ -87,16 +98,11 @@ class InvertirOnline:
 
 def main():
     iol = InvertirOnline()
-    token = iol.login()
-    data = iol.variacion(token)
 
-    gh = Github()
-    #gh.download_from_github()
-    
     db = Database()
-    db.add_dict_data(data)
+    db.add_dict_data(iol.portafolio())
     
-    #gh.upload_to_github()
+    # db.upload()
 
 
 if __name__ == '__main__':

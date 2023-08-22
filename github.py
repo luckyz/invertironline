@@ -2,72 +2,104 @@ import os
 from pathlib import Path
 import subprocess
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 class Github:
+    
+    database_filename = os.environ.get('DATABASE')
+    db_dir = database_filename.split('/')[0] if len(database_filename.split('/')) > 1 else None
+    db_name = database_filename.split('/')[-1] if len(database_filename.split('/')) > 1 else database_filename.split('/')[0]
+    
+    repo = os.environ.get('DATABASE_REPO')
+    user, repo_name = repo.split('/')[0], repo.split('/')[1]
+    github_token = os.environ.get('GITHUB_TOKEN')
+    repo_url = f'https://{github_token}@github.com/{user}/{repo_name}.git'
+    
+    BASE_DIR = os.path.dirname(Path(__file__).resolve())
+    
     def __init__(self):
-        pass
-        
-    def download_from_github(self):
+        if not Path(self.db_dir).exists():
+            self.clone()
+        else:
+            self.pull()
+    
+    def clone(self):
         try:
-            '''process = subprocess.Popen(
-                ['git', 'pull'],
+            process = subprocess.run(
+                ['git', 'clone', self.repo_url, 'data'],
+                cwd='.',
                 stdout=subprocess.PIPE
             )
-            output = process.communicate[0]
-            
-            output = process.communicate[0]
             
             if int(process.returncode) != 0:
-                print('Command failed. Return code : {}'.format(process.returncode))
-                exit(1)
-            return output'''
-            os.system('git pull')
-        except Exception as e:
-            print(e)
-            exit(1)
-
-    def upload_to_github(self, database='db.sqlite3', message='update'):
-        try:
-            '''process = subprocess.run(
-                ['git', 'add', database],
-                cwd='.',
-                stdout=subprocess.PIPE
-            )
-            # output = process.communicate[0]
-            
-            process = subprocess.run(
-                ['git', 'commit', '-m', message],
-                cwd='.',
-                stdout=subprocess.PIPE
-            )
-            # output = process.communicate[0]'''
-            
-            if not os.exists(database):
-                os.system(f'git add {database}')
-                os.system(f'git commit -m "{message}"')
-                os.system('git push')
-            
-            '''if int(process.returncode) != 0:
                 print('Command failed. Return code: {}'.format(process.returncode))
-                print(process.stdout)
-                exit(1)
-            # return output'''
+                raise(Exception)
         except Exception as e:
             print(e)
-            #print(process.stdout)
-            exit(1)
             
-    def get_token():
-        token = os.environ.get('GITHUB_TOKEN')
-        headers = {'Authorization': 'token ' + token}
+    def pull(self):
+        try:
+            process = subprocess.run(
+                ['git', 'pull'],
+                cwd=Path(self.db_dir).resolve(),
+                stdout=subprocess.PIPE
+            )
+            
+            if int(process.returncode) != 0:
+                print('Command failed. Return code: {}'.format(process.returncode))
+                raise(Exception)
+        except Exception as e:
+            print(e)
 
-        user_login = requests.get('https://api.github.com/user', headers=headers)
-        print(user_login.json())
+    def download(self):
+        try:
+            if Path(self.database_filename).exists():
+                process = subprocess.run(
+                    ['git', 'pull'],
+                    cwd=Path(self.db_dir).resolve(),
+                    stdout=subprocess.PIPE
+                )
+                
+                if int(process.returncode) != 0:
+                    print('Command failed. Return code: {}'.format(process.returncode))
+                    raise(Exception)
+        except Exception as e:
+            print(e)
+
+    def upload(self, message='update'):
+        try:
+            if Path(self.db_dir).exists():
+                process = subprocess.run(
+                    ['git', 'add', self.db_name],
+                    cwd=Path(self.db_dir).resolve(),
+                    stdout=subprocess.PIPE
+                )
+                
+                process = subprocess.run(
+                    ['git', 'commit', '-m', message],
+                    cwd=Path(self.db_dir).resolve(),
+                    stdout=subprocess.PIPE
+                )
+                
+                process = subprocess.run(
+                    ['git', 'push', '-u', 'origin', 'main'],
+                    cwd=Path(self.db_dir).resolve(),
+                    stdout=subprocess.PIPE
+                )
+
+                if int(process.returncode) != 0:
+                    print('Command failed. Return code: {}'.format(process.returncode))
+                    raise(Exception)
+        except Exception as e:
+            print(e)
 
 
 def main():
     gh = Github()
-    gh.upload_to_github()
+    gh.upload()
 
 
 if __name__ == '__main__':
