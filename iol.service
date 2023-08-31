@@ -5,6 +5,7 @@ After=multi-user.target
 [Service]
 User=pi
 Type=simple
+WorkingDirectory=/home/pi/Documents/develop/invertironline/
 ExecStart=/home/pi/Documents/develop/invertironline/venv/bin/python main.py
 Restart=always
 
