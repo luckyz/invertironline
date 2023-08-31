@@ -1,10 +1,11 @@
 [Unit]
-After=network.target
 Description=InvertirOnline database backup and restore
+After=multi-user.target
 
 [Service]
+User=pi
 Type=simple
-ExecStart=python main.py
+ExecStart=/home/pi/Documents/develop/invertironline/venv/python main.py
 Restart=always
 
 [Install]
